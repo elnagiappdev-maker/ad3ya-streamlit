@@ -34,7 +34,8 @@ def guess_mime(path_or_name: str) -> str:
 
 def to_data_url_file(path: Path) -> str:
     raw = path.read_bytes()
-    b64 = base64.bencode(raw).decode("ascii")
+    # FIXED: correct function is b64encode, not bencode
+    b64 = base64.b64encode(raw).decode("ascii")
     return f"data:{guess_mime(path.name)};base64,{b64}"
 
 def css_background_from(path: Path) -> str:
@@ -42,7 +43,7 @@ def css_background_from(path: Path) -> str:
         return "<style>html, body, .block-container {background:#0d1117;}</style>"
     raw = path.read_bytes()
     b64 = base64.b64encode(raw).decode("ascii")
-    mime = "image/jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
+    mime = "image/jpeg" if path.suffix.lower() in (".jpg",".jpeg") else "image/png"
     return f"""
     <style>
     .stApp {{
@@ -90,7 +91,7 @@ st.markdown(css_background_from(BG_IMAGE), unsafe_allow_html=True)
 st.markdown("<h2>أدعية صوتية</h2>", unsafe_allow_html=True)
 
 
-# ---------- Dedications (Fixed Hard-coded Version) ----------
+# ---------- Dedications (HARD-CODED FIXED) ----------
 st.markdown(
     """
     <div class='dedication' style='text-align:center'>
@@ -113,7 +114,10 @@ st.markdown(
 
 # ---------- Load audio files ----------
 AUDIO_DIR.mkdir(exist_ok=True)
-repo_files = [p for p in AUDIO_DIR.glob("*") if p.suffix.lower() in (".mp3", ".wav", ".ogg", ".m4a")]
+repo_files = [
+    p for p in AUDIO_DIR.glob("*")
+    if p.suffix.lower() in (".mp3", ".wav", ".ogg", ".m4a")
+]
 repo_files.sort(key=lambda p: normalize_for_sort(p.stem))
 
 if not repo_files:
@@ -131,9 +135,7 @@ if "reps" not in st.session_state:
     st.session_state.reps = 100
 
 cols = st.columns(6)
-preset_values = [10, 100, 1000, 2000, 3000, 4000]
-
-for i, n in enumerate(preset_values):
+for i, n in enumerate([10, 100, 1000, 2000, 3000, 4000]):
     with cols[i]:
         if st.button(f"{n}", use_container_width=True, key=f"r{n}"):
             st.session_state.reps = n
@@ -181,4 +183,7 @@ a.onended = () => {{
 
 st.components.v1.html(html, height=180)
 
-st.markdown("<div class='small' style='text-align:center'>🔒 التسجيلات ثابتة من داخل المستودع.</div>", unsafe_allow_html=True)
+st.markdown(
+    "<div class='small' style='text-align:center'>🔒 التسجيلات ثابتة من داخل المستودع.</div>",
+    unsafe_allow_html=True
+)
